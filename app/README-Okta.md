@@ -33,3 +33,24 @@ You can create an Okta developer account at [https://developer.okta.com/](https:
 "discovery_uri": "https://{{yourOrg}}.okta.com/.well-known/openid-configuration"
 }
 ```
+private void performTokenRequest(
+        TokenRequest request,
+        AuthorizationService.TokenResponseCallback callback) {
+        ClientAuthentication clientAuthentication;
+        if (Configuration.getInstance(TokenActivity.this).getClientSecret() != null) {
+            clientAuthentication = new ClientSecretBasic(Configuration.getInstance(TokenActivity.this).getClientSecret());
+
+        } else {
+            try {
+                clientAuthentication = mStateManager.getCurrent().getClientAuthentication();
+            } catch (ClientAuthentication.UnsupportedAuthenticationMethod ex) {
+                Log.d(TAG, "Token request cannot be made, client authentication for the token "
+                    + "endpoint could not be constructed (%s)", ex);
+                displayNotAuthorized("Client authentication method is unsupported");
+                return;
+            }
+        }
+        mAuthService.performTokenRequest(
+            request,
+            clientAuthentication,
+            callback);
